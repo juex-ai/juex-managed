@@ -19,14 +19,14 @@ import (
 	"testing"
 )
 
-func TestReleaseInstallerInstallsBothClientsAndRejectsCorruption(t *testing.T) {
+func TestReleaseInstallerCoexistsWithLocalRuntimeAndRejectsCorruption(t *testing.T) {
 	_, file, _, _ := runtime.Caller(0)
 	root := filepath.Clean(filepath.Join(filepath.Dir(file), "../.."))
-	packageName := "juex_1.2.3_" + runtime.GOOS + "_" + runtime.GOARCH
+	packageName := "juex-managed_1.2.3_" + runtime.GOOS + "_" + runtime.GOARCH
 	var payload bytes.Buffer
 	zipped := gzip.NewWriter(&payload)
 	archive := tar.NewWriter(zipped)
-	for _, name := range []string{"juex", "juex-executor"} {
+	for _, name := range []string{"juex-admin", "juex-executor"} {
 		binary := filepath.Join(t.TempDir(), name)
 		cmd := exec.Command("go", "build", "-ldflags", "-X github.com/juex-ai/juex/internal/foundation/version.Version=1.2.3", "-o", binary, "./cmd/"+name)
 		cmd.Dir = root
@@ -69,6 +69,32 @@ func TestReleaseInstallerInstallsBothClientsAndRejectsCorruption(t *testing.T) {
 	}))
 	defer server.Close()
 	prefix := t.TempDir()
+	localRuntime := filepath.Join(prefix, "lib", "juex", "local", "bin", "juex")
+	if err := os.MkdirAll(filepath.Dir(localRuntime), 0755); err != nil {
+		t.Fatal(err)
+	}
+	localContent := []byte("#!/bin/sh\nprintf 'local runtime\\n'\n")
+	if err := os.WriteFile(localRuntime, localContent, 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(prefix, "bin"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	localCommand := filepath.Join(prefix, "bin", "juex")
+	if err := os.Symlink(localRuntime, localCommand); err != nil {
+		t.Fatal(err)
+	}
+	checkLocalRuntime := func() {
+		t.Helper()
+		target, err := os.Readlink(localCommand)
+		if err != nil || target != localRuntime {
+			t.Fatalf("local runtime command changed: %q %v", target, err)
+		}
+		content, err := os.ReadFile(localRuntime)
+		if err != nil || !bytes.Equal(content, localContent) {
+			t.Fatalf("local runtime package changed: %v", err)
+		}
+	}
 	invoke := func() ([]byte, error) {
 		cmd := exec.Command("uv", "run", "--quiet", "--project", root, "python", filepath.Join(root, "scripts/install.py"), "--prefix", prefix, "--version", "1.2.3", "--release-base-url", server.URL)
 		cmd.Dir = root
@@ -77,14 +103,18 @@ func TestReleaseInstallerInstallsBothClientsAndRejectsCorruption(t *testing.T) {
 	if out, err := invoke(); err != nil {
 		t.Fatalf("install: %v %s", err, out)
 	}
+	checkLocalRuntime()
 	installed := map[string]string{}
-	for _, name := range []string{"juex", "juex-executor"} {
+	for _, name := range []string{"juex-admin", "juex-executor"} {
 		path := filepath.Join(prefix, "bin", name)
 		target, err := os.Readlink(path)
 		if err != nil {
 			t.Fatal(err)
 		}
 		installed[name] = target
+		if filepath.Dir(filepath.Dir(target)) != filepath.Join(prefix, "lib", "juex-managed", "releases") {
+			t.Fatalf("client outside Managed release directory: %s", target)
+		}
 		out, err := exec.Command(path, "--version").CombinedOutput()
 		if err != nil || !strings.Contains(string(out), "1.2.3") {
 			t.Fatalf("installed %s: %v %s", name, err, out)
@@ -94,6 +124,7 @@ func TestReleaseInstallerInstallsBothClientsAndRejectsCorruption(t *testing.T) {
 	if out, err := invoke(); err == nil || !strings.Contains(string(out), "checksum mismatch") {
 		t.Fatalf("corrupt package accepted: %v %s", err, out)
 	}
+	checkLocalRuntime()
 	for name, want := range installed {
 		got, err := os.Readlink(filepath.Join(prefix, "bin", name))
 		if err != nil || got != want {

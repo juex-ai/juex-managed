@@ -62,7 +62,7 @@ func (o options) open(authenticated bool) (*client, error) {
 		return nil, err
 	}
 	if authenticated && (c.session.Token == "" || !c.session.ExpiresAt.After(time.Now())) {
-		return nil, errors.New("login required; run juex login --email EMAIL --password-stdin")
+		return nil, errors.New("login required; run juex-admin login --email EMAIL --password-stdin")
 	}
 	return c, nil
 }
@@ -141,7 +141,7 @@ func (c *client) tenantID(ctx context.Context) (string, error) {
 			return wanted, nil
 		}
 	}
-	return "", errors.New("select an active tenant with --tenant ID or juex tenant use ID")
+	return "", errors.New("select an active tenant with --tenant ID or juex-admin tenant use ID")
 }
 
 func (c *client) ownerID() (string, error) {

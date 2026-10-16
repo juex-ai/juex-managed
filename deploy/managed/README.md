@@ -16,7 +16,7 @@ its executables. Dependency installation is separate from creating JueX state.
 No Docker, runsc or XFS is required. Run as the owning non-root user with a
 working macOS launchd session or Linux `systemd --user` manager.
 
-Extract and verify the matching `juex_platform_VERSION_OS_ARCH.tar.gz` release,
+Extract and verify the matching `juex-managed_platform_VERSION_OS_ARCH.tar.gz` release,
 then run from its directory (use `--bin-dir /absolute/repo/dist` for local builds):
 
 ```sh

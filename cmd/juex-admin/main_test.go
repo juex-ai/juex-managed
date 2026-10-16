@@ -11,7 +11,7 @@ import (
 )
 
 func TestCLIClientBuildAndVersion(t *testing.T) {
-	binary := filepath.Join(t.TempDir(), "juex")
+	binary := filepath.Join(t.TempDir(), "juex-admin")
 	build := exec.Command("go", "build", "-ldflags", "-X github.com/juex-ai/juex/internal/foundation/version.Version=1.2.3-test", "-o", binary, ".")
 	if out, err := build.CombinedOutput(); err != nil {
 		t.Fatalf("build: %v\n%s", err, out)
@@ -21,7 +21,7 @@ func TestCLIClientBuildAndVersion(t *testing.T) {
 		t.Fatalf("version: %v\n%s", err, out)
 	}
 	var info version.Info
-	if err := json.Unmarshal(out, &info); err != nil || info.Version != "1.2.3-test" || info.Name != "juex" {
+	if err := json.Unmarshal(out, &info); err != nil || info.Version != "1.2.3-test" || info.Name != "juex-admin" {
 		t.Fatalf("metadata: %s %v", out, err)
 	}
 	out, err = exec.Command(binary, "--version").CombinedOutput()
@@ -32,7 +32,7 @@ func TestCLIClientBuildAndVersion(t *testing.T) {
 	if err != nil {
 		t.Fatalf("help: %v %s", err, out)
 	}
-	for _, command := range []string{"login", "tenant", "fleet", "agent", "thread", "request"} {
+	for _, command := range []string{"juex-admin", "login", "tenant", "fleet", "agent", "thread", "request"} {
 		if !strings.Contains(string(out), command) {
 			t.Errorf("help missing %s", command)
 		}

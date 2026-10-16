@@ -10,11 +10,50 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
 )
+
+func TestDefaultLoginCredentialsAreManagedAndOriginScoped(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("XDG_CONFIG_HOME", filepath.Join(home, "config"))
+	if runtime.GOOS == "windows" {
+		t.Setenv("AppData", filepath.Join(home, "config"))
+	}
+	config, err := os.UserConfigDir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	paths := make(map[string]bool)
+	for _, origin := range []string{"https://first.example.test", "https://second.example.test"} {
+		path, err := defaultSessionFile(origin)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if filepath.Dir(path) != filepath.Join(config, "juex-managed", "client") || paths[path] {
+			t.Fatalf("credential path is not Managed and origin scoped: %s", path)
+		}
+		paths[path] = true
+		c := client{options: options{sessionFile: path}, origin: origin, session: loginSession{Origin: origin, Token: origin, ExpiresAt: time.Now().Add(time.Hour)}}
+		if err := c.saveSession(); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, origin := range []string{"https://first.example.test", "https://second.example.test"} {
+		c, err := (options{server: origin}).open(true)
+		if err != nil || c.session.Token != origin {
+			t.Fatalf("load default login for %s: %v", origin, err)
+		}
+		info, err := os.Stat(c.sessionFile)
+		if err != nil || info.Mode().Perm() != 0600 {
+			t.Fatalf("credential file permissions: %v", err)
+		}
+	}
+}
 
 func TestClientPrivateCAStillVerifiesServerIdentity(t *testing.T) {
 	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {

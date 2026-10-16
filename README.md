@@ -1,4 +1,4 @@
-# JueX
+# JueX Managed
 
 > English | [中文](README.zh.md)
 
@@ -20,23 +20,27 @@ independent Fleet applications and continue according to their own lifecycle.
 
 ## Clients
 
-Release archives contain `juex` and `juex-executor` for Linux/macOS, amd64/arm64.
-Separate `juex_platform_*` archives include all five services and the operator.
+Release archives contain `juex-admin` and `juex-executor` for Linux/macOS, amd64/arm64.
+Separate `juex-managed_platform_*` archives include all five services and the operator.
 Download an archive and verify its release checksum, or use the Python 3.11+
 installer from a checked-out release:
 
 ```sh
 python3 scripts/install.py --version VERSION
 export JUEX_SERVER=https://juex.example.com
-juex login --email user@example.com --password-stdin
-juex tenant list
-juex fleet show
-juex agent list
+juex-admin login --email user@example.com --password-stdin
+juex-admin tenant list
+juex-admin fleet show
+juex-admin agent list
 ```
 
 The login command reads the password from standard input. Do not place it in
 command arguments. CLI session credentials are private and scoped to the public
 origin. See [client CLI](internal/entrypoints/clientcli/README.md) and command help.
+
+`juex-admin` can coexist with the separate JueX local runtime's `juex` command.
+Client credentials use the OS configuration directory's `juex-managed/client`
+namespace; installed release generations live under `<prefix>/lib/juex-managed`.
 
 Enroll a remote Linux/macOS device with an explicit private state directory:
 

@@ -14,7 +14,7 @@ GNU tar（macOS 使用 `gtar`）。按依赖的正常方式安装；PostgreSQL �
 runsc 或 XFS。以所属非 root 用户运行，并具备可用的 macOS launchd 会话或 Linux
 `systemd --user` 管理器。
 
-解压并校验对应的 `juex_platform_VERSION_OS_ARCH.tar.gz`，在发布目录运行
+解压并校验对应的 `juex-managed_platform_VERSION_OS_ARCH.tar.gz`，在发布目录运行
 （本地构建可使用 `--bin-dir /absolute/repo/dist`）：
 
 ```sh
