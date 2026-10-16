@@ -106,7 +106,7 @@ func TestPackageOwnershipClassifiesNestedAndUnknownRoots(t *testing.T) {
 		"internal/app/managed":                 "app",
 		"internal/migration/legacy":            "migration",
 		"internal/entrypoints/managementhttp":  "entrypoints",
-		"cmd/juex":                             "cmd",
+		"cmd/juex-admin":                       "cmd",
 		"internal/unclassified":                "",
 		"internal/cmd":                         "",
 		"tests/e2e":                            "",

@@ -16,7 +16,7 @@ def main():
     subprocess.run(['make', 'build-clients'], cwd=root, check=True)
     directory = args.prefix.expanduser().absolute() / 'bin'
     directory.mkdir(parents=True, exist_ok=True)
-    for name in ('juex', 'juex-executor'):
+    for name in ('juex-admin', 'juex-executor'):
         fd, temporary = tempfile.mkstemp(prefix='.'+name+'-', dir=directory)
         os.close(fd)
         try:

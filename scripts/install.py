@@ -27,9 +27,9 @@ def install(prefix: Path, version: str, base_url: str, system: str, arch: str) -
     version = version.removeprefix("v")
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._+-]*", version):
         raise ValueError("invalid release version")
-    name = f"juex_{version}_{system}_{arch}"
+    name = f"juex-managed_{version}_{system}_{arch}"
     archive = name + ".tar.gz"
-    base_url = base_url or f"https://github.com/juex-ai/juex/releases/download/v{version}"
+    base_url = base_url or f"https://github.com/juex-ai/juex-managed/releases/download/v{version}"
     hashes = download(base_url.rstrip("/") + "/checksums.txt").decode()
     expected = [line.split()[0] for line in hashes.splitlines()
                 if len(line.split()) == 2 and line.split()[1].lstrip("*") == archive]
@@ -40,14 +40,14 @@ def install(prefix: Path, version: str, base_url: str, system: str, arch: str) -
         raise ValueError("release checksum mismatch")
     binaries = {}
     with tarfile.open(fileobj=io.BytesIO(payload), mode="r:gz") as bundle:
-        for binary in ("juex", "juex-executor"):
+        for binary in ("juex-admin", "juex-executor"):
             matches = [m for m in bundle.getmembers() if m.name == f"{name}/bin/{binary}"]
             if len(matches) != 1 or not matches[0].isfile() or matches[0].size > 300 << 20:
                 raise ValueError(f"invalid release binary: {binary}")
             with bundle.extractfile(matches[0]) as source:
                 binaries[binary] = source.read()
     prefix = prefix.expanduser().absolute()
-    releases, bin_dir = prefix / "lib/juex/releases", prefix / "bin"
+    releases, bin_dir = prefix / "lib/juex-managed/releases", prefix / "bin"
     releases.mkdir(parents=True, exist_ok=True)
     bin_dir.mkdir(parents=True, exist_ok=True)
     directory = Path(tempfile.mkdtemp(prefix=name + "-", dir=releases))
@@ -81,12 +81,12 @@ def main() -> None:
     if not version:
         if args.release_base_url:
             parser.error("--version is required with --release-base-url")
-        version = json.loads(download("https://api.github.com/repos/juex-ai/juex/releases/latest"))["tag_name"]
+        version = json.loads(download("https://api.github.com/repos/juex-ai/juex-managed/releases/latest"))["tag_name"]
     system = platform.system().lower()
     arch = {"x86_64": "amd64", "aarch64": "arm64"}.get(platform.machine().lower(), platform.machine().lower())
     directory = install(args.prefix, version, args.release_base_url, system, arch)
-    print(f"Installed juex and juex-executor: {directory}")
-    print(f"Add {args.prefix.expanduser().absolute() / 'bin'} to PATH. Use juex --server https://YOUR-PLATFORM login --help.")
+    print(f"Installed juex-admin and juex-executor: {directory}")
+    print(f"Add {args.prefix.expanduser().absolute() / 'bin'} to PATH. Use juex-admin --server https://YOUR-PLATFORM login --help.")
 
 
 if __name__ == "__main__":

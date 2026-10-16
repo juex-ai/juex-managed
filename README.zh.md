@@ -1,4 +1,4 @@
-# JueX
+# JueX Managed
 
 > [English](README.md) | 中文
 
@@ -18,22 +18,26 @@ Runtime 中运行，使用部署管理的 Host 或 Hosted 环境，也可使用�
 
 ## 客户端
 
-发布归档包含 Linux/macOS、amd64/arm64 的 `juex` 和 `juex-executor`。
-独立的 `juex_platform_*` 归档还包含全部五个服务和部署工具。
+发布归档包含 Linux/macOS、amd64/arm64 的 `juex-admin` 和 `juex-executor`。
+独立的 `juex-managed_platform_*` 归档还包含全部五个服务和部署工具。
 下载归档并校验发布校验和，或在检出的发布版本中使用 Python 3.11+ 安装器：
 
 ```sh
 python3 scripts/install.py --version VERSION
 export JUEX_SERVER=https://juex.example.com
-juex login --email user@example.com --password-stdin
-juex tenant list
-juex fleet show
-juex agent list
+juex-admin login --email user@example.com --password-stdin
+juex-admin tenant list
+juex-admin fleet show
+juex-admin agent list
 ```
 
 登录命令从标准输入读取密码，不要将密码放进命令参数。CLI 会话凭据以私密文件保存，
 作用域绑定平台公开 origin。详见 [客户端 CLI](internal/entrypoints/clientcli/README.zh.md)
 及命令帮助。
+
+`juex-admin` 可与独立的 JueX 本地运行时命令 `juex` 共存。客户端凭据使用操作系统
+配置目录下的 `juex-managed/client` 命名空间；安装的发布版本保存在
+`<prefix>/lib/juex-managed` 下。
 
 通过明确的私密状态目录接入远程 Linux/macOS 设备：
 

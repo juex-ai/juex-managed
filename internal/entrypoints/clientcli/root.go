@@ -17,10 +17,12 @@ type action func(*cobra.Command, *client, []string) (any, error)
 
 func Execute(ctx context.Context, args []string, in io.Reader, out, errOut io.Writer) error {
 	var o options
-	root := &cobra.Command{Use: "juex", Short: "Manage Agents on a JueX platform", SilenceUsage: true, SilenceErrors: true}
+	root := &cobra.Command{Use: "juex-admin", Short: "Manage Agents on a JueX Managed platform", SilenceUsage: true, SilenceErrors: true}
 	root.Version = version.Version
-	root.AddCommand(&cobra.Command{Use: "version", Short: "Print build metadata", Args: cobra.NoArgs, RunE: func(_ *cobra.Command, _ []string) error {
-		return json.NewEncoder(out).Encode(version.Build())
+	root.AddCommand(&cobra.Command{Use: "version", Short: "Print build metadata", Args: cobra.NoArgs, RunE: func(cmd *cobra.Command, _ []string) error {
+		info := version.Build()
+		info.Name = cmd.Root().Name()
+		return json.NewEncoder(out).Encode(info)
 	}})
 	root.SetArgs(args)
 	root.SetIn(in)

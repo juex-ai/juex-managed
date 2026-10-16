@@ -1,4 +1,4 @@
-project_name: juex
+project_name: juex-managed
 version: 2
 
 before:
@@ -8,9 +8,9 @@ before:
     - make web-sync
 
 builds:
-  - id: juex
-    main: ./cmd/juex
-    binary: bin/juex
+  - id: juex-admin
+    main: ./cmd/juex-admin
+    binary: bin/juex-admin
     env: [CGO_ENABLED=0]
     flags: [-trimpath]
     ldflags: &metadata
@@ -89,14 +89,14 @@ builds:
 
 archives:
   - id: clients
-    ids: [juex, juex-executor]
+    ids: [juex-admin, juex-executor]
     name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}_{{.Arch}}"
     formats: [tar.gz]
     wrap_in_directory: true
     files: [README.md, README.zh.md]
 
   - id: platform
-    ids: [juex, juex-executor, juex-management, juex-runtime, juex-memory, juex-calendar, juex-execution, juex-service-log, juex-migrate]
+    ids: [juex-admin, juex-executor, juex-management, juex-runtime, juex-memory, juex-calendar, juex-execution, juex-service-log, juex-migrate]
     name_template: "{{.ProjectName}}_platform_{{.Version}}_{{.Os}}_{{.Arch}}"
     formats: [tar.gz]
     wrap_in_directory: true
@@ -130,6 +130,6 @@ changelog:
 release:
   github:
     owner: juex-ai
-    name: juex
+    name: juex-managed
   draft: false
   prerelease: auto

@@ -26,7 +26,7 @@ func defaultSessionFile(origin string) (string, error) {
 		return "", err
 	}
 	id := sha256.Sum256([]byte(origin))
-	return filepath.Join(dir, "juex", "client", fmt.Sprintf("%x.json", id[:16])), nil
+	return filepath.Join(dir, "juex-managed", "client", fmt.Sprintf("%x.json", id[:16])), nil
 }
 
 func readSession(path, origin string) (loginSession, error) {

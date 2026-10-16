@@ -42,8 +42,6 @@ VERSION   := $(shell git describe --tags --always --dirty 2>/dev/null || echo $(
 COMMIT    := $(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)
 BUILDTIME := $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 
-DIST_BIN := dist/juex
-
 LDFLAGS := -X github.com/juex-ai/juex/internal/foundation/version.Version=$(VERSION) \
            -X github.com/juex-ai/juex/internal/foundation/version.Commit=$(COMMIT) \
            -X github.com/juex-ai/juex/internal/foundation/version.BuildTime=$(BUILDTIME)
@@ -99,7 +97,7 @@ lint:
 build: web
 	$(MAKE) build-go
 
-CLIENTS := juex juex-executor
+CLIENTS := juex-admin juex-executor
 SERVICES := juex-management juex-runtime juex-execution juex-memory juex-calendar juex-guest juex-service-log juex-migrate
 
 build-clients:
